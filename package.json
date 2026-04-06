@@ -1,0 +1,22 @@
+{
+  "name": "ai-phone-lead-capture-mvp",
+  "version": "0.1.0",
+  "description": "MVP AI phone lead capture system for small businesses",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "NODE_ENV=development node server.js"
+  },
+  "dependencies": {
+    "@fastify/formbody": "^8.0.2",
+    "dotenv": "^16.4.5",
+    "fastify": "^5.0.0",
+    "libphonenumber-js": "^1.11.9",
+    "openai": "^6.33.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

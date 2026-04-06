@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lead Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F6F4F1;
+    --surface: #FFFFFF;
+    --text-primary: #1A1A1A;
+    --text-secondary: #6B6B6B;
+    --text-tertiary: #888888;
+    --border: #E8E5E1;
+    --border-light: #F0EEEB;
+    --accent-green: #2DB86A;
+    --accent-green-bg: #EEFBF3;
+    --accent-red: #E8453C;
+    --accent-red-bg: #FDF0EF;
+    --accent-blue: #4A7BF7;
+    --accent-blue-bg: #EEF3FE;
+    --radius: 14px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+    --shadow-hover: 0 8px 30px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 40px 24px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .dashboard { max-width: 680px; margin: 0 auto; }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-left h1 {
+    font-weight: 600;
+    font-size: 32px;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+
+  .header-left p {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    margin-top: 6px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .stat-indicator {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  .stat-indicator .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent-green);
+  }
+
+  .stat-indicator .count {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .stat-indicator.urgent .dot {
+    background: var(--accent-red);
+    animation: pulse-red 2s ease-in-out infinite;
+  }
+
+  .stat-indicator.urgent .count { color: var(--accent-red); }
+  .stat-indicator.urgent .label { color: var(--accent-red); opacity: 0.75; }
+
+  @keyframes pulse-red {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ── Lead Cards ── */
+  .lead-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .lead-card {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+    cursor: pointer;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: slideIn 0.5s cubic-bezier(0.2, 0, 0, 1) forwards;
+  }
+
+  .lead-card:nth-child(1) { animation-delay: 0.08s; }
+  .lead-card:nth-child(2) { animation-delay: 0.16s; }
+  .lead-card:nth-child(3) { animation-delay: 0.24s; }
+
+  @keyframes slideIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .lead-card:hover {
+    box-shadow: var(--shadow-hover);
+    border-color: var(--border);
+  }
+
+  .lead-card.expanded {
+    box-shadow: var(--shadow-hover);
+    border-color: var(--border);
+  }
+
+  .lead-card.priority {
+    border-color: var(--accent-red);
+    border-width: 1.5px;
+    background: linear-gradient(135deg, var(--surface) 0%, var(--accent-red-bg) 100%);
+  }
+
+  .lead-card.priority:hover,
+  .lead-card.priority.expanded {
+    border-color: var(--accent-red);
+    box-shadow: 0 8px 30px rgba(232, 69, 60, 0.1), 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  /* ── Card Header (always visible) ── */
+  .lead-card-header {
+    display: grid;
+    grid-template-columns: 44px 1fr auto;
+    align-items: center;
+    gap: 18px;
+    padding: 20px 24px;
+  }
+
+  .avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+  }
+
+  .avatar.blue { background: var(--accent-blue-bg); color: var(--accent-blue); }
+  .avatar.green { background: var(--accent-green-bg); color: var(--accent-green); }
+  .avatar.red { background: var(--accent-red-bg); color: var(--accent-red); }
+
+  .lead-info { min-width: 0; }
+
+  .lead-name {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 3px;
+    letter-spacing: -0.1px;
+  }
+
+  .lead-message {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+  }
+
+  .lead-card.expanded .lead-message {
+    white-space: normal;
+  }
+
+  .lead-phone {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+    letter-spacing: 0.3px;
+  }
+
+  .lead-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .badge {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+
+  .badge.standard { background: var(--border-light); color: var(--text-secondary); }
+  .badge.priority { background: var(--accent-red); color: white; }
+
+  .time-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .time-label {
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+
+  .lead-card.priority .time-label {
+    color: var(--accent-red);
+    font-weight: 500;
+  }
+
+  .chevron {
+    width: 16px;
+    height: 16px;
+    color: var(--text-tertiary);
+    transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .lead-card:hover .chevron { color: var(--text-secondary); }
+
+  .lead-card.expanded .chevron {
+    transform: rotate(90deg);
+    color: var(--text-secondary);
+  }
+
+  /* ── Expanded Detail Panel ── */
+  .lead-detail {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .lead-card.expanded .lead-detail {
+    max-height: 400px;
+  }
+
+  .lead-detail-inner {
+    padding: 0 24px 24px 86px;
+  }
+
+  .detail-divider {
+    height: 1px;
+    background: var(--border-light);
+    margin-bottom: 18px;
+  }
+
+  .lead-card.priority .detail-divider {
+    background: rgba(232, 69, 60, 0.12);
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .detail-item label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+  }
+
+  .detail-item span {
+    font-size: 13.5px;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .detail-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    text-decoration: none;
+  }
+
+  .btn svg { width: 15px; height: 15px; }
+
+  .btn-primary {
+    background: var(--text-primary);
+    color: white;
+  }
+
+  .btn-primary:hover { background: #333; }
+
+  .btn-secondary {
+    background: var(--bg);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--border-light);
+    color: var(--text-primary);
+  }
+
+  .btn-ghost {
+    background: none;
+    color: var(--text-tertiary);
+    padding: 9px 12px;
+    margin-left: auto;
+  }
+
+  .btn-ghost:hover { color: var(--text-primary); }
+
+  .btn-ghost svg {
+    width: 14px;
+    height: 14px;
+    transition: transform 0.2s ease;
+  }
+
+  .btn-ghost:hover svg { transform: translateX(3px); }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer-time { font-size: 12px; color: var(--text-tertiary); }
+
+  .footer-link {
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.2s ease;
+  }
+
+  .footer-link:hover { color: var(--text-primary); }
+
+  .footer-link svg {
+    width: 14px;
+    height: 14px;
+    transition: transform 0.2s ease;
+  }
+
+  .footer-link:hover svg { transform: translateX(3px); }
+
+  /* ── Mobile ── */
+  @media (max-width: 520px) {
+    body { padding: 24px 16px; }
+    .header-left h1 { font-size: 28px; }
+    .lead-card-header { padding: 16px 18px; gap: 14px; }
+    .avatar { width: 38px; height: 38px; font-size: 12px; border-radius: 10px; }
+    .lead-name { font-size: 14px; }
+    .lead-message { font-size: 13px; }
+    .lead-detail-inner { padding: 0 18px 20px 18px; }
+    .detail-grid { grid-template-columns: 1fr; gap: 10px; }
+    .detail-actions { flex-wrap: wrap; }
+  }
+
+  .lead-detail {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+}
+
+.lead-card.expanded .lead-detail {
+  max-height: 400px;
+  opacity: 1;
+}
+
+.lead-card.expanded .lead-detail {
+  display: block;
+}
+
+.chevron {
+  transition: transform 0.2s ease;
+}
+
+.lead-card.expanded .chevron {
+  transform: rotate(90deg);
+}
+</style>
+</head>
+<body>
+
+<div class="dashboard">
+  <header class="header">
+    <div class="header-left">
+      <h1>Leads</h1>
+      <p>Sunday, Apr 5</p>
+    </div>
+    <div class="header-right">
+      <div class="stat-indicator urgent">
+        <span class="dot"></span>
+        <span class="count urgent-count">1</span>
+        <span class="label">urgent</span>
+      </div>
+      <div class="stat-indicator">
+        <span class="dot"></span>
+        <span class="count active-count">3</span>
+        <span class="label">active</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="lead-list" id="leadList"></div>
+
+  <footer class="footer">
+    <span class="footer-time">Updated just now</span>
+    <a href="#" class="footer-link">
+      View all leads
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </footer>
+</div>
+
+<script>
+async function loadLeads() {
+  try {
+    const res = await fetch('http://localhost:3000/api/leads');
+    const data = await res.json();
+
+    const sorted = data.leads.sort((a, b) => {
+      const aPriority = a.suggestedNextAction.type === 'priority_callback' ? 1 : 0;
+      const bPriority = b.suggestedNextAction.type === 'priority_callback' ? 1 : 0;
+
+      if (bPriority !== aPriority) return bPriority - aPriority;
+      return new Date(b.timestamp) - new Date(a.timestamp);
+    });
+const urgentCount = data.leads.filter(
+  l => l.suggestedNextAction.type === 'priority_callback'
+).length;
+
+const activeCount = data.leads.length;
+
+document.querySelector('.urgent-count').textContent = urgentCount;
+document.querySelector('.active-count').textContent = activeCount;
+
+    const container = document.getElementById('leadList');
+
+container.innerHTML = sorted.map(lead => `
+  <div class="lead-card ${lead.suggestedNextAction.type === 'priority_callback' ? 'priority' : ''}" onclick="toggleCard(this)">
+    <div class="lead-card-header">
+      <div class="avatar ${lead.suggestedNextAction.type === 'priority_callback' ? 'red' : 'blue'}">
+        ${(lead.lead?.name || 'NA').split(' ').map(n => n[0]).join('')}
+      </div>
+
+      <div class="lead-info">
+        <div class="lead-name">${lead.lead?.name || 'Unknown'}</div>
+        <div class="lead-message">${lead.lead?.intentSummary || lead.lead?.serviceRequested || ''}</div>
+        <div class="lead-phone">${lead.lead?.phone || ''}</div>
+      </div>
+
+      <div class="lead-meta">
+        <span class="badge ${lead.suggestedNextAction.type === 'priority_callback' ? 'priority' : 'standard'}">
+          ${lead.suggestedNextAction.type === 'priority_callback' ? 'Priority' : 'Standard'}
+        </span>
+        <div class="time-row">
+          <span class="time-label">
+            ${(() => {
+              const mins = Math.floor((Date.now() - new Date(lead.timestamp)) / 60000);
+              if (mins < 1) return 'just now';
+              if (mins < 60) return mins + 'm ago';
+              return Math.floor(mins / 60) + 'h ago';
+            })()}
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="lead-detail">
+      <div class="lead-detail-inner">
+        <div class="detail-divider"></div>
+
+        <div class="detail-grid">
+          <div class="detail-item">
+            <label>Service Type</label>
+            <span>${lead.lead?.serviceType || 'Unknown'}</span>
+          </div>
+          <div class="detail-item">
+            <label>Location</label>
+            <span>Not captured</span>
+          </div>
+          <div class="detail-item">
+            <label>Source</label>
+            <span>Voice AI</span>
+          </div>
+          <div class="detail-item">
+            <label>Availability</label>
+            <span>${lead.lead?.aiUrgency === 'high' ? 'ASAP' : 'Unknown'}</span>
+          </div>
+        </div>
+
+        <div class="detail-actions">
+          <button class="btn btn-primary" onclick="event.stopPropagation()">Call</button>
+          <button class="btn btn-secondary" onclick="event.stopPropagation()">Message</button>
+          <a href="#" class="btn btn-ghost" onclick="event.stopPropagation()">View full case</a>
+        </div>
+      </div>
+    </div>
+  </div>
+`).join('');
+  } catch (err) {
+    alert(err.message);
+    console.error(err);
+  }
+}
+
+loadLeads();
+
+window.toggleCard = (card) => {
+  const isOpen = card.classList.contains('expanded');
+
+  // close all cards
+  document.querySelectorAll('.lead-card.expanded').forEach(c => {
+    c.classList.remove('expanded');
+  });
+
+  // open the clicked one (if it wasn’t already open)
+  if (!isOpen) {
+    card.classList.add('expanded');
+  }
+};
+</script>
+
+</body>
+</html>
