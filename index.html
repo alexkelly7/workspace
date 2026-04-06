@@ -470,7 +470,7 @@
 <script>
 async function loadLeads() {
   try {
-    const res = await fetch('http://localhost:3000/api/leads');
+    const res = await fetch('/api/leads');
     const data = await res.json();
 
     const sorted = data.leads.sort((a, b) => {
