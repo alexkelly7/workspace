@@ -29,6 +29,22 @@ const openai = new OpenAI({
 // MVP in-memory store
 const leads = [];
 
+app.post('/api/leads', async (req, res) => {
+  const lead = req.body;
+
+  const { data, error } = await supabase
+    .from('leads')
+    .insert([lead])
+    .select();
+
+  if (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Failed to save lead' });
+  }
+
+  res.json({ success: true, lead: data[0] });
+});
+
 // Per-call session state (MVP)
 const sessions = new Map();
 
