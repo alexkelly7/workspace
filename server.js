@@ -39,7 +39,7 @@ app.post('/api/leads', async (req, res) => {
 
   if (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Failed to save lead' });
+    return res.code(500).send({ error: 'Failed to save lead' });
   }
 
   res.json({ success: true, lead: data[0] });
