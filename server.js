@@ -61,16 +61,16 @@ app.post('/api/voice/incoming', (req, res) => {
 });
 
 app.post('/api/voice/process', (req, res) => {
-  const speech = req.body.SpeechResult || 'No speech captured';
+  const speech = String(req.body.SpeechResult || '').trim();
 
   res.type('text/xml');
   res.send(`
     <Response>
       <Say voice="alice">
-        You said: ${speech}
+        You said: ${speech || 'nothing'}.
       </Say>
       <Say voice="alice">
-        Thanks. We have your request.
+        Thanks. We got your request.
       </Say>
       <Hangup />
     </Response>
@@ -183,20 +183,28 @@ Return this exact shape:
 app.get('/health', async () => ({ status: 'ok' }));
 
 // Twilio voice webhook for inbound call start
-app.post('/voice/incoming', async (request, reply) => {
-  const callSid = request.body.CallSid;
-  const from = request.body.From;
-
-  if (!callSid) {
-    return reply.code(400).send({ error: 'Missing CallSid' });
-  }
-
-  initializeSession(callSid, from);
-
-  const prompt = `Hi, thanks for calling ${BUSINESS_NAME}. I can quickly take your details to help our team follow up. What do you need help with today?`;
-
-  reply.header('Content-Type', 'text/xml');
-  return reply.send(twimlSayGather(prompt));
+app.post('/api/voice/incoming', (req, res) => {
+  res.type('text/xml');
+  res.send(`
+    <Response>
+      <Gather
+        input="speech"
+        action="https://workspace-wn93.onrender.com/api/voice/process"
+        method="POST"
+        speechTimeout="auto"
+        timeout="4"
+        actionOnEmptyResult="true"
+      >
+        <Say voice="alice">
+          Thanks for calling. Please tell me what you need help with today.
+        </Say>
+      </Gather>
+      <Say voice="alice">
+        Sorry, I did not hear anything. Please call back and try again.
+      </Say>
+      <Hangup />
+    </Response>
+  `);
 });
 
 // Twilio voice webhook for each gathered speech turn
