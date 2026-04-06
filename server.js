@@ -45,20 +45,6 @@ app.post('/api/leads', async (req, res) => {
   res.send({ success: true, lead: data[0] });
 });
 
-//twilio entry point
-app.post('/api/voice/incoming', (req, res) => {
-  res.type('text/xml');
-  res.send(`
-    <Response>
-      <Say voice="alice">
-        Thanks for calling. What can we help you with today?
-      </Say>
-      <Gather input="speech" action="/api/voice/process" method="POST">
-        <Say>Please tell me what you need.</Say>
-      </Gather>
-    </Response>
-  `);
-});
 
 app.post('/api/voice/process', (req, res) => {
   const speech = String(req.body.SpeechResult || '').trim();
