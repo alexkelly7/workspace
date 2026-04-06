@@ -1,3 +1,12 @@
+
+const { createClient } = require('@supabase/supabase-js');
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
+
+console.log('Supabase URL:', process.env.SUPABASE_URL);
+
 const OpenAI = require('openai');
 const fs = require('fs');
 require('dotenv').config();
@@ -53,7 +62,7 @@ function normalizePhone(raw) {
 }
 
 function suggestNextAction(lead) {
-  const text = `${lead.serviceRequested || ''} ${lead.intentSummary || ''}`.toLowerCase();
+  const text = `${lead.lead.intentSummary || lead.lead.serviceRequested} ${lead.intentSummary || ''}`.toLowerCase();
   const urgentKeywords = ['urgent', 'emergency', 'asap', 'today', 'now'];
   const isUrgent = urgentKeywords.some((w) => text.includes(w));
 
