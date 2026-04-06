@@ -42,7 +42,7 @@ app.post('/api/leads', async (req, res) => {
     return res.code(500).send({ error: 'Failed to save lead' });
   }
 
-  res.json({ success: true, lead: data[0] });
+  res.send({ success: true, lead: data[0] });
 });
 
 // Per-call session state (MVP)
