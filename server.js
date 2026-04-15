@@ -27,6 +27,7 @@ const openai = new OpenAI({
 
 // MVP in-memory store
 const leads = [];
+const callSessions = new Map();
 
 app.post('/api/leads', async (req, res) => {
   const lead = req.body;
@@ -45,21 +46,50 @@ app.post('/api/leads', async (req, res) => {
 });
 
 //api process route
-app.post('/api/voice/process', async (req, res) => {
-  const speech = String(req.body.SpeechResult || '').trim();
+const callSid = req.body.CallSid;
+const speech = String(req.body.SpeechResult || '').trim();
 
+if (!callSessions.has(callSid)) {
+  callSessions.set(callSid, {
+    name: null,
+    phone: null,
+    problem: null
+  });
+}
+
+const session = callSessions.get(callSid);
+if (!session.problem) {
+  session.problem = speech;
+} else if (!session.name) {
+  session.name = speech;
+} else if (!session.phone) {
+  session.phone = speech;
+}
+app.post('/api/voice/process', async (req, res) => {
   // Send user speech to OpenAI
   const response = await openai.responses.create({
     model: 'gpt-4.1-mini',
-    input: `You are an AI receptionist for a home service business.
-Your job is to collect:
+    input: input: `You are an AI receptionist for a home service business.
+
+You are collecting:
+- problem
 - name
 - phone number
-- problem
 
-User said: "${speech}"
+Current known info:
+- Problem: ${session.problem || 'unknown'}
+- Name: ${session.name || 'unknown'}
+- Phone: ${session.phone || 'unknown'}
 
-Respond naturally and ask the next question if needed.`,
+User just said: "${speech}"
+
+Rules:
+- Only ask for information that is still missing
+- Do NOT ask for something you already have
+- Be short and natural
+- Once all 3 are collected, confirm and end the conversation
+
+Respond naturally.`,
   });
 
   const aiText = response.output_text || "Sorry, I didn't catch that.";
