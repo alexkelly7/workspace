@@ -1,3 +1,8 @@
+const OpenAI = require('openai');
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(
@@ -45,20 +50,35 @@ app.post('/api/leads', async (req, res) => {
   res.send({ success: true, lead: data[0] });
 });
 
-
-app.post('/api/voice/process', (req, res) => {
+//api process route
+app.post('/api/voice/process', async (req, res) => {
   const speech = String(req.body.SpeechResult || '').trim();
+
+  // Send user speech to OpenAI
+  const response = await openai.responses.create({
+    model: 'gpt-4.1-mini',
+    input: `You are an AI receptionist for a home service business.
+Your job is to collect:
+- name
+- phone number
+- problem
+
+User said: "${speech}"
+
+Respond naturally and ask the next question if needed.`,
+  });
+
+  const aiText = response.output_text || "Sorry, I didn't catch that.";
 
   res.type('text/xml');
   res.send(`
     <Response>
       <Say voice="alice">
-        You said: ${speech || 'nothing'}.
+        ${aiText}
       </Say>
-      <Say voice="alice">
-        Thanks. We got your request.
-      </Say>
-      <Hangup />
+      <Gather input="speech" action="/api/voice/process" method="POST">
+        <Say>Please continue.</Say>
+      </Gather>
     </Response>
   `);
 });
