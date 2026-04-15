@@ -66,10 +66,30 @@ if (!session.problem) {
   session.phone = speech;
 }
 app.post('/api/voice/process', async (req, res) => {
-  // Send user speech to OpenAI
+  const callSid = req.body.CallSid;
+  const speech = String(req.body.SpeechResult || '').trim();
+
+  if (!callSessions.has(callSid)) {
+    callSessions.set(callSid, {
+      name: null,
+      phone: null,
+      problem: null
+    });
+  }
+
+  const session = callSessions.get(callSid);
+
+  if (!session.problem) {
+    session.problem = speech;
+  } else if (!session.name) {
+    session.name = speech;
+  } else if (!session.phone) {
+    session.phone = speech;
+  }
+
   const response = await openai.responses.create({
     model: 'gpt-4.1-mini',
-    input: input: `You are an AI receptionist for a home service business.
+    input: `You are an AI receptionist for a home service business.
 
 You are collecting:
 - problem
@@ -91,6 +111,19 @@ Rules:
 
 Respond naturally.`,
   });
+
+  const aiText = response.output_text || "Sorry, I didn't catch that.";
+
+  res.type('text/xml');
+  res.send(`
+    <Response>
+      <Say voice="alice">${aiText}</Say>
+      <Gather input="speech" action="/api/voice/process" method="POST">
+        <Say>Please continue.</Say>
+      </Gather>
+    </Response>
+  `);
+});
 
   const aiText = response.output_text || "Sorry, I didn't catch that.";
 
